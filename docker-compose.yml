@@ -1,0 +1,49 @@
+version: "3"
+services:
+  mysql_db:
+    image: mysql
+    container_name: sql_container
+    ports:
+      - 3306:3306
+    environment:
+      # - MYSQL_ROOT_PASSWORD=Student#0509
+      - MYSQL_DATABASE=sai
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test#0509
+      - MYSQL_ROOT_PASSWORD=Student#0509
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - django
+  rest_api:
+    build: .
+    container_name: crud_app
+    depends_on:
+      - mysql_db
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    # external_links:
+    #   - first_sql
+    # links:
+    #   - mysql:mysql
+    ports:
+      - 80:80
+    environment:
+      - DB_NAME=sai
+      - DB_USER=root
+      - DB_PASSWORD=Student#0509
+      - DB_HOST=mysql_db
+      - DB_PORT=3306
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - django
+    command: sh -c 'sleep 15 ; python manage.py makemigrations ; python manage.py migrate ; python manage.py runserver 0.0.0.0:80'
+
+networks:
+  django:
+    driver: bridge
+volumes:
+  mysql-data:
